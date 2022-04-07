@@ -74,7 +74,7 @@ struct BurrowsWheelerTransform {
 template <char cmin = 'a', char cmax = 'z'>
 struct BurrowsWheelerTransformBitVector {
    public:
-    BurrowsWheelerTransform(std::string &s, size_t step)
+    BurrowsWheelerTransformBitVector(std::string &s, size_t step)
         : n(s.size() + 1), step(step) {
         std::vector<int> v(s.size());
         for (size_t i = 0; i < s.size(); i++) {
