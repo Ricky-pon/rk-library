@@ -6,7 +6,7 @@
 
 namespace rklib {
 
-template <class T>
+template <class T = int>
 struct BitVector {
    public:
     BitVector() : BitVector(0) {}
