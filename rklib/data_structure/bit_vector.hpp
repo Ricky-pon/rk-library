@@ -11,7 +11,7 @@ struct BitVector {
    public:
     BitVector() : BitVector(0) {}
     BitVector(int n) : BitVector(std::vector<T>(n, 0), 0) {}
-    BitVector(const std::vector<T> &a, int d) {
+    BitVector(const std::vector<T> &a, int d = 0) {
         int num = (a.size() >> lg) + 1;
         sum.resize(num + 1, 0);
         bit.resize(num, 0);
