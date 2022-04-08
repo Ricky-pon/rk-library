@@ -8,11 +8,10 @@
 
 namespace rklib {
 
-template <char cmin = 'a', char cmax = 'z'>
+template <char cmin = 'a', char cmax = 'z', size_t step = 1>
 struct BurrowsWheelerTransform {
    public:
-    BurrowsWheelerTransform(std::string &s, size_t step)
-        : n(s.size() + 1), step(step) {
+    BurrowsWheelerTransform(std::string &s) : n(s.size() + 1) {
         std::vector<int> v(s.size());
         for (size_t i = 0; i < s.size(); i++) {
             v[i] = (s[i] - cmin) + 1;
@@ -58,9 +57,14 @@ struct BurrowsWheelerTransform {
         return res;
     }
 
+    bool contains(std::string &s) {
+        auto [l, r] = fm_index(s);
+        return r - l > 0;
+    }
+
    private:
     const size_t cnum = (cmax - cmin) + 2;
-    size_t n, step;
+    size_t n;
     std::vector<int> bwt, cnt_smaller, sa;
     std::vector<std::vector<int>> cnt;
 
@@ -74,8 +78,7 @@ struct BurrowsWheelerTransform {
 template <char cmin = 'a', char cmax = 'z'>
 struct BurrowsWheelerTransformBitVector {
    public:
-    BurrowsWheelerTransformBitVector(std::string &s, size_t step)
-        : n(s.size() + 1), step(step) {
+    BurrowsWheelerTransformBitVector(std::string &s) : n(s.size() + 1) {
         std::vector<int> v(s.size());
         for (size_t i = 0; i < s.size(); i++) {
             v[i] = (s[i] - cmin) + 1;
@@ -122,9 +125,14 @@ struct BurrowsWheelerTransformBitVector {
         return res;
     }
 
+    bool contains(std::string &s) {
+        auto [l, r] = fm_index(s);
+        return r - l > 0;
+    }
+
    private:
     const size_t cnum = (cmax - cmin) + 2;
-    size_t n, step;
+    size_t n;
     std::vector<int> bwt, cnt_smaller, sa;
     std::vector<BitVector<int>> vs;
 };
