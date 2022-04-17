@@ -51,6 +51,22 @@ struct BitSet {
         }
         return *this;
     }
+    BitSet& operator&=(const BitSet& rhs) {
+        if (this->bit.size() < rhs.bit.size())
+            this->bit.resize(rhs.bit.size(), 0);
+        for (size_t i = 0; i < this->bit.size() && i < rhs.bit.size(); i++) {
+            this->bit[i] &= rhs.bit[i];
+        }
+        return *this;
+    }
+    BitSet& operator^=(const BitSet& rhs) {
+        if (this->bit.size() < rhs.bit.size())
+            this->bit.resize(rhs.bit.size(), 0);
+        for (size_t i = 0; i < this->bit.size() && i < rhs.bit.size(); i++) {
+            this->bit[i] ^= rhs.bit[i];
+        }
+        return *this;
+    }
     BitSet& operator+=(const BitSet& rhs) {
         if (this->bit.size() < rhs.bit.size())
             this->bit.resize(rhs.bit.size(), 0);
@@ -100,6 +116,12 @@ struct BitSet {
 
     friend BitSet operator|(const BitSet& lhs, const BitSet& rhs) {
         return BitSet(lhs) |= rhs;
+    }
+    friend BitSet operator&(const BitSet& lhs, const BitSet& rhs) {
+        return BitSet(lhs) &= rhs;
+    }
+    friend BitSet operator^(const BitSet& lhs, const BitSet& rhs) {
+        return BitSet(lhs) ^= rhs;
     }
     friend BitSet operator+(const BitSet& lhs, const BitSet& rhs) {
         return BitSet(lhs) += rhs;
