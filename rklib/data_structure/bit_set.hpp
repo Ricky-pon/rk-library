@@ -44,6 +44,31 @@ struct BitSet {
 
     size_t size() { return n; }
 
+    int popcount() { return popcount(0, n); }
+    int popcount(size_t l, size_t r) {
+        if (l >= r) return 0;
+
+        size_t li = l >> lg, lj = l & mod_w;
+        size_t ri = r >> lg, rj = r & mod_w;
+
+        if (li == ri) {
+            return __builtin_popcountll((bit[li] >> lj) << (w - rj + lj));
+        }
+
+        int res = 0;
+        if (lj > 0) {
+            res += __builtin_popcountll(bit[li] & (mask << lj));
+            ++li;
+        }
+        for (size_t k = li; k < ri; k++) {
+            res += __builtin_popcountll(bit[k]);
+        }
+        if (rj > 0) {
+            res += __builtin_popcountll(bit[ri] & (mask >> (w - rj)));
+        }
+        return res;
+    }
+
     BitSet& operator|=(const BitSet& rhs) {
         if (this->bit.size() < rhs.bit.size())
             this->bit.resize(rhs.bit.size(), 0);
