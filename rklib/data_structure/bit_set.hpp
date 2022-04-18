@@ -9,11 +9,7 @@ namespace rklib {
 struct BitSet {
     using ulint = unsigned long long;
 
-    size_t n;
-    std::vector<ulint> bit;
-    static constexpr size_t lg = 6, w = 64, mod_w = w - 1;
-    static constexpr ulint mask = (((1ULL << (w - 1)) - 1) << 1) + 1;
-
+   public:
     BitSet() : BitSet(0) {}
     BitSet(size_t n) : BitSet(n, 0) {}
     BitSet(size_t n, int v) : n(n) {
@@ -93,7 +89,7 @@ struct BitSet {
         }
         size_t q = rhs >> lg, r = rhs & mod_w;
         if (q > 0) {
-            for (int i = int(bit.size()) - 1; i >= 0; i--) {
+            for (int i = int(this->bit.size()) - 1; i >= 0; i--) {
                 this->bit[i] = (i >= int(q) ? this->bit[i - q] : 0ULL);
             }
         }
@@ -103,6 +99,27 @@ struct BitSet {
                     (this->bit[i - 1] >> (w - r)) | (this->bit[i] << r);
             }
             this->bit[0] <<= r;
+        }
+        return *this;
+    }
+    BitSet& operator>>=(const ulint& rhs) {
+        if (rhs >= n) {
+            std::fill(this->bit.begin(), this->bit.end(), 0ULL);
+            return *this;
+        }
+        size_t q = rhs >> lg, r = rhs & mod_w;
+        if (q > 0) {
+            for (size_t i = 0; i < this->bit.size(); i++) {
+                this->bit[i] =
+                    (i + q < this->bit.size() ? this->bit[i + q] : 0ULL);
+            }
+        }
+        if (r > 0) {
+            for (size_t i = 0; i < this->bit.size() - 1; i++) {
+                this->bit[i] =
+                    (this->bit[i] >> r) | (this->bit[i + 1] << (w - r));
+            }
+            *this->bit.rbegin() >>= r;
         }
         return *this;
     }
@@ -134,8 +151,15 @@ struct BitSet {
     friend BitSet operator<<(const BitSet& lhs, const ulint& rhs) {
         return BitSet(lhs) <<= rhs;
     }
+    friend BitSet operator>>(const BitSet& lhs, const ulint& rhs) {
+        return BitSet(lhs) >>= rhs;
+    }
 
    private:
+    size_t n;
+    std::vector<ulint> bit;
+    static constexpr size_t lg = 6, w = 64, mod_w = w - 1;
+    static constexpr ulint mask = (((1ULL << (w - 1)) - 1) << 1) + 1;
 };
 
 }  // namespace rklib
