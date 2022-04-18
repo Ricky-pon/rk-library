@@ -100,6 +100,10 @@ struct BitSet {
             }
             this->bit[0] <<= r;
         }
+        if ((n & mod_w) > 0) {
+            size_t j = n & mod_w;
+            *this->bit.rbegin() &= mask >> (w - j);
+        }
         return *this;
     }
     BitSet& operator>>=(const ulint& rhs) {
