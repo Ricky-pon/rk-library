@@ -16,7 +16,12 @@ struct BitSet {
 
     BitSet() : BitSet(0) {}
     BitSet(size_t n) : BitSet(n, 0) {}
-    BitSet(size_t n, int val) : BitSet(std::vector<int>(n, val)) {}
+    BitSet(size_t n, int v) : n(n) {
+        ulint val = (v == 0 ? 0ULL : mask);
+        bit.resize(div_ceil(n, w), val);
+        size_t r = n & mod_w;
+        if (r > 0) *bit.rbegin() &= mask >> (w - r);
+    }
     BitSet(const std::vector<int>& v) : n(v.size()) {
         bit.resize(div_ceil(n, w), 0ULL);
         for (size_t i = 0; i < bit.size(); i++) {
