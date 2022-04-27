@@ -265,28 +265,6 @@ Polygon convex_hull(Points p) {
     return ch;
 }
 
-std::pair<real_num, std::pair<int, int>> farthest_pair(Polygon& p) {
-    int n = p.size();
-    if (n == 2) {
-        return {abs(p[0] - p[1]), {0, 1}};
-    }
-    int i = 0, j = 0;
-    for (int k = 0; k < n; ++k) {
-        if (le(p[k].x, p[i].x)) i = k;
-        if (ge(p[k].x, p[j].x)) j = k;
-    }
-    real_num d = 0;
-    int a = i, b = j, si = i, sj = j;
-    while (i != sj || j != si) {
-        if (chmax(d, abs(p[i] - p[j]))) a = i, b = j;
-        if (le((p[(i + 1) % n] - p[i]) ^ (p[(j + 1) % n] - p[j]), 0)) {
-            i = (i + 1) % n;
-        } else
-            j = (j + 1) % n;
-    }
-    return {d, {a, b}};
-}
-
 real_num convex_cut(Polygon& p, Line l) {
     int n = p.size();
     auto [a, v] = l;
@@ -302,6 +280,22 @@ real_num convex_cut(Polygon& p, Line l) {
     return area(q);
 }
 
+Point circumcenter(Point a, Point b, Point c) {
+    Point m = (a + b) / 2, n = (a + c) / 2;
+    Vec v = {-(b - a).y, (b - a).x}, w = {-(c - a).y, (c - a).x};
+    return intersection(Line(m, v), Line(n, w));
+}
+
+Point incenter(Point a, Point b, Point c) {
+    real_num A = abs(b - c), B = abs(c - a), C = abs(a - b);
+    return (a * A + b * B + c * C) / (A + B + C);
+}
+
+Point orthocenter(Point a, Point b, Point c) {
+    Vec v = {-(c - b).y, (c - b).x}, w = {-(c - a).y, (c - a).x};
+    return intersection(Line(a, v), Line(b, w));
+}
+
 namespace internal {
 
 std::pair<real_num, std::pair<int, int>> closest_pair_rec(
@@ -311,7 +305,7 @@ std::pair<real_num, std::pair<int, int>> closest_pair_rec(
 
     int m = (l + r) / 2;
     real_num x = p[m].first.x;
-    auto d = min(closest_pair_rec(p, l, m), closest_pair_rec(p, m, r));
+    auto d = std::min(closest_pair_rec(p, l, m), closest_pair_rec(p, m, r));
     auto cmp = [](std::pair<Point, int> a, std::pair<Point, int> b) {
         return a.first.y < b.first.y;
     };
@@ -340,6 +334,28 @@ std::pair<real_num, std::pair<int, int>> closest_pair(Points& p) {
     }
     std::sort(pid.begin(), pid.end());
     return internal::closest_pair_rec(pid, 0, int(p.size()));
+}
+
+std::pair<real_num, std::pair<int, int>> farthest_pair(Polygon& p) {
+    int n = p.size();
+    if (n == 2) {
+        return {abs(p[0] - p[1]), {0, 1}};
+    }
+    int i = 0, j = 0;
+    for (int k = 0; k < n; ++k) {
+        if (le(p[k].x, p[i].x)) i = k;
+        if (ge(p[k].x, p[j].x)) j = k;
+    }
+    real_num d = 0;
+    int a = i, b = j, si = i, sj = j;
+    while (i != sj || j != si) {
+        if (chmax(d, abs(p[i] - p[j]))) a = i, b = j;
+        if (le((p[(i + 1) % n] - p[i]) ^ (p[(j + 1) % n] - p[j]), 0)) {
+            i = (i + 1) % n;
+        } else
+            j = (j + 1) % n;
+    }
+    return {d, {a, b}};
 }
 
 void arg_sort(Points& p) {
@@ -530,22 +546,6 @@ std::tuple<std::vector<Line>, Points, Points> common_tangent(Circle c1,
         ls.push_back({tg[0], rotation(c2.c - c1.c, PI / 2)});
     }
     return {ls, ps, qs};
-}
-
-Point circumcenter(Point a, Point b, Point c) {
-    Point m = (a + b) / 2, n = (a + c) / 2;
-    Vec v = {-(b - a).y, (b - a).x}, w = {-(c - a).y, (c - a).x};
-    return intersection(Line(m, v), Line(n, w));
-}
-
-Point incenter(Point a, Point b, Point c) {
-    real_num A = abs(b - c), B = abs(c - a), C = abs(a - b);
-    return (a * A + b * B + c * C) / (A + B + C);
-}
-
-Point orthocenter(Point a, Point b, Point c) {
-    Vec v = {-(c - b).y, (c - b).x}, w = {-(c - a).y, (c - a).x};
-    return intersection(Line(a, v), Line(b, w));
 }
 
 Circle minimum_bounding_circle(Points& p) {
