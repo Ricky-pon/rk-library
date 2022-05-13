@@ -179,7 +179,7 @@ Point intersection(Segment s1, Segment s2) {
 
 real_num distance(Line l, Point p) {
     auto [a, v] = l;
-    return abs(v ^ (p - a) / abs(v));
+    return std::abs(v ^ (p - a) / abs(v));
 }
 
 real_num distance(Segment s, Point p) {
@@ -212,7 +212,7 @@ real_num area(Polygon& p) {
     for (size_t i = 0; i < p.size(); i++) {
         res += p[i] ^ p[(i + 1) % p.size()] / 2;
     }
-    return abs(res);
+    return std::abs(res);
 }
 
 bool is_convex(Polygon& p) {
@@ -313,7 +313,7 @@ std::pair<real_num, std::pair<int, int>> closest_pair_rec(
 
     std::vector<std::pair<Point, int>> q;
     for (int i = l; i < r; ++i) {
-        if (ge(abs(p[i].first.x - x), d.first)) continue;
+        if (ge(std::abs(p[i].first.x - x), d.first)) continue;
         for (int j = int(q.size()) - 1; j >= 0; --j) {
             real_num dy = p[i].first.y - q[j].first.y;
             if (geq(dy, d.first)) break;
@@ -515,7 +515,7 @@ std::tuple<std::vector<Line>, Points, Points> common_tangent(Circle c1,
     int num = num_of_common_tangent(c1, c2);
     if (num >= 2) {
         real_num d = abs(c2.c - c1.c);
-        real_num t = std::acos(abs(c1.r - c2.r) / d);
+        real_num t = std::acos(std::abs(c1.r - c2.r) / d);
         if (le(c1.r, c2.r)) t = PI - t;
 
         ps.push_back(c1.c + rotation(c2.c - c1.c, t) * c1.r / d);
