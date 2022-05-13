@@ -2,6 +2,7 @@
 #define RK_GEOMETRY_2D_RATIONAL_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <limits>
 #include <rklib/utility/utility.hpp>
@@ -221,7 +222,7 @@ T area(Polygon<T>& p) {
     for (size_t i = 0; i < p.size(); i++) {
         res += p[i] ^ p[(i + 1) % p.size()] / 2;
     }
-    return abs(res);
+    return std::abs(res);
 }
 
 template <class T>
@@ -230,7 +231,7 @@ T area_doubled(Polygon<T>& p) {
     for (size_t i = 0; i < p.size(); i++) {
         res += p[i] ^ p[(i + 1) % p.size()];
     }
-    return abs(res);
+    return std::abs(res);
 }
 
 template <class T>
@@ -273,11 +274,13 @@ Polygon<T> convex_hull(Points<T> p) {
     Polygon<T> ch(2 * n);
     int k = 0;
     for (int i = 0; i < n; i++) {
-        while (k > 1 && ((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1])) < 0) --k;
+        while (k > 1 && ((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1])) <= 0)
+            --k;
         ch[k++] = p[i];
     }
     for (int i = n - 2, t = k; i >= 0; --i) {
-        while (k > t && ((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1])) < 0) --k;
+        while (k > t && ((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1])) <= 0)
+            --k;
         ch[k++] = p[i];
     }
     ch.resize(k - 1);
@@ -323,11 +326,11 @@ Point<T> circumcenter(Point<T> a, Point<T> b, Point<T> c) {
     return intersection(Line(m, v), Line(n, w));
 }
 
-template <class T>
-Point<T> incenter(Point<T> a, Point<T> b, Point<T> c) {
-    T A = abs(b - c), B = abs(c - a), C = abs(a - b);
-    return (a * A + b * B + c * C) / (A + B + C);
-}
+// template <class T>
+// Point<T> incenter(Point<T> a, Point<T> b, Point<T> c) {
+//     T A = abs(b - c), B = abs(c - a), C = abs(a - b);
+//     return (a * A + b * B + c * C) / (A + B + C);
+// }
 
 template <class T>
 Point<T> orthocenter(Point<T> a, Point<T> b, Point<T> c) {
@@ -352,7 +355,7 @@ std::pair<T, std::pair<int, int>> closest_pair_rec(
 
     std::vector<std::pair<Point<T>, int>> q;
     for (int i = l; i < r; ++i) {
-        if (abs(p[i].first.x - x) > d.first) continue;
+        if (std::abs(p[i].first.x - x) > d.first) continue;
         for (int j = int(q.size()) - 1; j >= 0; --j) {
             T dy = p[i].first.y - q[j].first.y;
             if (dy >= d.first) break;
@@ -378,23 +381,26 @@ std::pair<T, std::pair<int, int>> closest_pair(Points<T>& p) {
 
 template <class T>
 std::pair<T, std::pair<int, int>> farthest_pair(Polygon<T>& p) {
-    int n = p.size();
+    auto ch = convex_hull(p);
+    int n = ch.size();
     if (n == 2) {
-        return {abs(p[0] - p[1]), {0, 1}};
+        return {abs_sqared(ch[0] - ch[1]), {0, 1}};
     }
+
     int i = 0, j = 0;
     for (int k = 0; k < n; ++k) {
-        if (p[k].x < p[i].x) i = k;
-        if (p[k].x > p[j].x) j = k;
+        if (ch[k].x < ch[i].x) i = k;
+        if (ch[k].x > ch[j].x) j = k;
     }
     T d = 0;
     int a = i, b = j, si = i, sj = j;
     while (i != sj || j != si) {
-        if (chmax(d, abs(p[i] - p[j]))) a = i, b = j;
-        if (((p[(i + 1) % n] - p[i]) ^ (p[(j + 1) % n] - p[j])) < 0) {
+        if (chmax(d, abs_sqared(ch[i] - ch[j]))) a = i, b = j;
+        if (((ch[(i + 1) % n] - ch[i]) ^ (ch[(j + 1) % n] - ch[j])) < 0) {
             i = (i + 1) % n;
-        } else
+        } else {
             j = (j + 1) % n;
+        }
     }
     return {d, {a, b}};
 }
