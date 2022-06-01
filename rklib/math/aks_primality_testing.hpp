@@ -93,6 +93,7 @@ bool is_prime(long long n) {
     {
         auto [threshold, eq] = internal::log2_ceil(n);
         threshold += eq;
+        threshold *= threshold;
         for (;; ++r) {
             long long tmp = 1, n_mod_r = n % r;
             int cnt = 0;
