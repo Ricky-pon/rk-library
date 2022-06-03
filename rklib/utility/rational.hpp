@@ -2,9 +2,22 @@
 #define RK_RATIONAL_HPP
 
 #include <cassert>
-#include <numeric>
+#include <iostream>
 
 namespace rklib {
+
+namespace rational_internal {
+
+template <class T>
+T gcd(T a, T b) {
+    if (b == T(0)) {
+        if (a < T(0)) a = -a;
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+}  // namespace rational_internal
 
 template <class T = long long>
 struct Rational {
@@ -14,7 +27,7 @@ struct Rational {
     Rational(T n, T d) : num(n), den(d) {
         assert(den != T(0));
         if (den < 0) num = -num, den = -den;
-        T g = std::gcd(num, den);
+        T g = rational_internal::gcd(num, den);
         num /= g;
         den /= g;
     }
@@ -24,20 +37,20 @@ struct Rational {
 
     Rational& operator+=(const Rational& rhs) {
         T r_den = rhs.den;
-        T g = std::gcd(den, r_den);
+        T g = rational_internal::gcd(den, r_den);
         den /= g;
         num = num * (r_den / g) + rhs.num * den;
-        g = std::gcd(num, g);
+        g = rational_internal::gcd(num, g);
         num /= g;
         den *= r_den / g;
         return *this;
     }
     Rational& operator-=(const Rational& rhs) {
         T r_den = rhs.den;
-        T g = std::gcd(den, r_den);
+        T g = rational_internal::gcd(den, r_den);
         den /= g;
         num = num * (r_den / g) - rhs.num * den;
-        g = std::gcd(num, g);
+        g = rational_internal::gcd(num, g);
         num /= g;
         den *= r_den / g;
         return *this;
@@ -46,8 +59,8 @@ struct Rational {
         T r_num = rhs.num;
         T r_den = rhs.den;
 
-        T g1 = std::gcd(num, r_den);
-        T g2 = std::gcd(r_num, den);
+        T g1 = rational_internal::gcd(num, r_den);
+        T g2 = rational_internal::gcd(r_num, den);
         num = (num / g1) * (r_num / g2);
         den = (den / g2) * (r_den / g1);
         return *this;
@@ -61,8 +74,8 @@ struct Rational {
         assert(r_num != zero);
         if (num == zero) return *this;
 
-        T gcd1 = std::gcd(num, r_num);
-        T gcd2 = std::gcd(r_den, den);
+        T gcd1 = rational_internal::gcd(num, r_num);
+        T gcd2 = rational_internal::gcd(r_den, den);
         num = (num / gcd1) * (r_den / gcd2);
         den = (den / gcd2) * (r_num / gcd1);
 
@@ -118,7 +131,7 @@ struct Rational {
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Rational& r) {
-        if (r.den == 1) return os << r.num;
+        if (r.den == T(1)) return os << r.num;
         return os << r.num << "/" << r.den;
     }
 
