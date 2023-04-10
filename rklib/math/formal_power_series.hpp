@@ -212,6 +212,11 @@ struct FormalPowerSeries : public std::vector<T> {
         size_t l = std::find_if(this->begin(), this->end(),
                                 [](T x) { return x != 0; }) -
                    this->begin();
+        if (m == 0) {
+            auto res = fps(n, 0);
+            res[0] = 1;
+            return res;
+        }
         if (l == this->size() || (l > 0 && m >= (long long)div_ceil(n, l))) {
             return fps(n, 0);
         }
