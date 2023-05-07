@@ -25,33 +25,50 @@ struct SimpleSieve {
 };
 
 struct Sieve {
-    std::vector<int> min_factor, prime;
-
+   public:
     Sieve(int n) {
-        min_factor.resize(n + 1, 0);
+        mpf.resize(n + 1, 0);
+        mpf[1] = 1;
         for (int i = 2; i <= n; ++i) {
-            if (min_factor[i] == 0) {
-                min_factor[i] = i;
-                prime.push_back(i);
+            if (mpf[i] == 0) {
+                mpf[i] = i;
+                ps.push_back(i);
             }
-            for (int x : prime) {
-                if (x * i > n || x > i) break;
-                min_factor[x * i] = x;
+            for (int p : ps) {
+                if (p * i > n || p > mpf[i]) break;
+                mpf[p * i] = p;
             }
         }
     }
 
-    std::vector<std::pair<int, int>> prime_factor(int n) {
+    bool is_prime(int n) { return mpf[n] == n; }
+
+    int min_prime_factor(int n) { return mpf[n]; }
+
+    std::vector<std::pair<int, int>> prime_factorize(int n) {
         std::vector<std::pair<int, int>> res;
         while (n > 1) {
-            if (res.empty() || res.rbegin()->first != min_factor[n]) {
-                res.emplace_back(min_factor[n], 1);
+            if (res.empty() || res.rbegin()->first != mpf[n]) {
+                res.emplace_back(mpf[n], 1);
             } else
                 ++res.rbegin()->second;
-            n /= min_factor[n];
+            n /= mpf[n];
         }
         return res;
     }
+
+    std::vector<int> divisors(int n, bool sorted = false) {
+        std::vector<int> res;
+        auto p = prime_factorize(n);
+        divisor_dfs(p, 1, 0, res);
+        if (sorted) sort(res.begin(), res.end());
+        return res;
+    }
+
+    std::vector<int> primes() { return ps; }
+
+   private:
+    std::vector<int> mpf, ps;
 
     void divisor_dfs(std::vector<std::pair<int, int>> &p, int t, int cur,
                      std::vector<int> &res) {
@@ -64,14 +81,6 @@ struct Sieve {
             t *= p[cur].first;
             divisor_dfs(p, t, cur + 1, res);
         }
-    }
-
-    std::vector<int> get_divisor(int n, bool sorted = false) {
-        std::vector<int> res;
-        auto p = prime_factor(n);
-        divisor_dfs(p, 1, 0, res);
-        if (sorted) sort(res.begin(), res.end());
-        return res;
     }
 };
 
