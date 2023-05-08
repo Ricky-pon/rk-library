@@ -41,7 +41,7 @@ struct Sieve {
         }
     }
 
-    bool is_prime(int n) { return mpf[n] == n; }
+    bool is_prime(int n) { return n >= 2 && mpf[n] == n; }
 
     int min_prime_factor(int n) { return mpf[n]; }
 
@@ -66,6 +66,21 @@ struct Sieve {
     }
 
     std::vector<int> primes() { return ps; }
+
+    std::vector<int> mobius_function() {
+        int n = mpf.size() - 1;
+        std::vector<int> res(n + 1, 0);
+        res[1] = 1;
+        for (auto p : ps) res[p] = -1;
+        for (int i = 2; i <= n; ++i) {
+            if (res[i] == 0) continue;
+            for (auto p : ps) {
+                if (p * i > n || p >= mpf[i]) break;
+                res[p * i] = -res[i];
+            }
+        }
+        return res;
+    }
 
    private:
     std::vector<int> mpf, ps;
