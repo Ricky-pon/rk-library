@@ -54,6 +54,28 @@ struct RollingHash {
     }
 };
 
+int calc_lcp(RollingHash &rh1, int l1, int r1, RollingHash &rh2, int l2,
+             int r2) {
+    if (l1 == r1 || l2 == r2) {
+        return 0;
+    }
+    int len = std::min(r1 - l1, r2 - l2);
+    if (rh1.slice(l1, l1 + len) == rh2.slice(l2, l2 + len)) {
+        return len;
+    }
+
+    int low = 0, high = len;
+    while (high - low > 1) {
+        auto mid = (low + high) / 2;
+        if (rh1.slice(l1, l1 + mid) == rh2.slice(l2, l2 + mid)) {
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+    return low;
+}
+
 }  // namespace rklib
 
 #endif  // RK_ROLLING_HASH_HPP
