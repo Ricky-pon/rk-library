@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <rklib/utility/utility.hpp>
+#include <tuple>
 #include <vector>
 
 namespace rklib {
@@ -235,9 +236,9 @@ int point_in_polygon(Point a, Polygon& p) {
     int n = p.size(), wn = 0;
     for (int i = 0; i < n; i++) {
         int j = (i + 1) % n;
-        if (distance(Segment(p[i], p[j]), a) == 0)
+        if (eq(distance(Segment(p[i], p[j]), a), 0)) {
             return 1;
-        else if (p[i].y <= a.y && a.y < p[j].y) {
+        } else if (p[i].y <= a.y && a.y < p[j].y) {
             wn += (ccw(a, p[i], p[j]) == CCW_COUNTER_CLOCKWISE);
         } else if (p[j].y <= a.y && a.y < p[i].y) {
             wn -= (ccw(a, p[i], p[j]) == CCW_CLOCKWISE);
@@ -252,13 +253,15 @@ Polygon convex_hull(Points p) {
     Polygon ch(2 * n);
     int k = 0;
     for (int i = 0; i < n; i++) {
-        while (k > 1 && le((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1]), 0))
+        while (k > 1 && le((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1]), 0)) {
             --k;
+        }
         ch[k++] = p[i];
     }
     for (int i = n - 2, t = k; i >= 0; --i) {
-        while (k > t && le((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1]), 0))
+        while (k > t && le((ch[k - 1] - ch[k - 2]) ^ (p[i] - ch[k - 1]), 0)) {
             --k;
+        }
         ch[k++] = p[i];
     }
     ch.resize(k - 1);
@@ -361,24 +364,27 @@ std::pair<real_num, std::pair<int, int>> farthest_pair(Polygon& p) {
 void arg_sort(Points& p) {
     auto cmp = [&](Point& a, Point& b) {
         if (le(a.y, 0)) {
-            if (le(b.y, 0))
-                return geq(a ^ b, 0);
-            else
+            if (le(b.y, 0)) {
+                return ge(a ^ b, 0);
+            } else {
                 return true;
+            }
         } else if (eq(a.y, 0)) {
-            if (le(b.y, 0))
+            if (le(b.y, 0)) {
                 return false;
-            else if (eq(b.y, 0))
-                return geq(a.x, b.x);
-            else
+            } else if (eq(b.y, 0)) {
+                return ge(a.x, b.x);
+            } else {
                 return geq(a.x, 0);
+            }
         } else {
-            if (le(b.y, 0))
+            if (le(b.y, 0)) {
                 return false;
-            else if (eq(b.y, 0))
+            } else if (eq(b.y, 0)) {
                 return le(b.x, 0);
-            else
-                return geq(a ^ b, 0);
+            } else {
+                return ge(a ^ b, 0);
+            }
         }
     };
     std::sort(p.begin(), p.end(), cmp);

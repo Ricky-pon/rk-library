@@ -25,7 +25,7 @@ struct Point {
 
     Point(T x = 0, T y = 0) : x(x), y(y) {}
 
-    bool operator==(const Point& rhs) { return x == rhs.x && y == rhs.y; }
+    bool operator==(const Point& rhs) const { return x == rhs.x && y == rhs.y; }
     bool operator<(const Point& rhs) const {
         if (x == rhs.x) return y < rhs.y;
         return x < rhs.x;
@@ -135,21 +135,21 @@ constexpr int CCW_ON_SEGMENT = 0;    // A->C->B
 template <class T>
 int ccw(Point<T> a, Point<T> b, Point<T> c) {
     Vec<T> v = b - a, w = c - a;
-    if ((v ^ w) > 0) return CCW_COUNTER_CLOCKWISE;
-    if ((v ^ w) < 0) return CCW_CLOCKWISE;
-    if (v * w < 0) return CCW_ONLINE_BACK;
-    if ((a - b) * (c - b) < 0) return CCW_ONLINE_FRONT;
+    if ((v ^ w) > T(0)) return CCW_COUNTER_CLOCKWISE;
+    if ((v ^ w) < T(0)) return CCW_CLOCKWISE;
+    if (v * w < T(0)) return CCW_ONLINE_BACK;
+    if ((a - b) * (c - b) < T(0)) return CCW_ONLINE_FRONT;
     return CCW_ON_SEGMENT;
 }
 
 template <class T>
 bool is_parallel(Vec<T> v, Vec<T> w) {
-    return (v ^ w) == 0;
+    return (v ^ w) == T(0);
 }
 
 template <class T>
 bool is_orthogonal(Vec<T> v, Vec<T> w) {
-    return v * w == 0;
+    return v * w == T(0);
 }
 
 template <class T>
@@ -183,15 +183,14 @@ Point<T> intersection(Segment<T> s1, Segment<T> s2) {
 
 template <class T>
 T distance_squared(Line<T> l, Point<T> p) {
-    auto [a, v] = l;
     return abs_sqared(projection(l, p) - p);
 }
 
 template <class T>
 T distance_squared(Segment<T> s, Point<T> p) {
     auto [a, b] = s;
-    if (le((b - a) * (p - a), 0)) return abs_sqared(p - a);
-    if (le((a - b) * (p - b), 0)) return abs_sqared(p - b);
+    if ((b - a) * (p - a) < T(0)) return abs_sqared(p - a);
+    if ((a - b) * (p - b) < T(0)) return abs_sqared(p - b);
     return distance_squared(Line(a, b - a), p);
 }
 
@@ -406,30 +405,32 @@ std::pair<T, std::pair<int, int>> farthest_pair(Polygon<T>& p) {
 }
 
 template <class T>
+auto arg_cmp = [](Point<T>& a, Point<T>& b) -> bool {
+    if (a.y < 0) {
+        if (b.y < 0)
+            return (a ^ b) > 0;
+        else
+            return true;
+    } else if (a.y == 0) {
+        if (b.y < 0)
+            return false;
+        else if (b.y == 0)
+            return a.x > b.x;
+        else
+            return a.x >= 0;
+    } else {
+        if (b.y < 0)
+            return false;
+        else if (b.y == 0)
+            return b.x < 0;
+        else
+            return (a ^ b) > 0;
+    }
+};
+
+template <class T>
 void arg_sort(Points<T>& p) {
-    auto cmp = [&](Point<T>& a, Point<T>& b) {
-        if (a.y < 0) {
-            if (b.y < 0)
-                return (a ^ b) >= 0;
-            else
-                return true;
-        } else if (a.y == 0) {
-            if (b.y < 0)
-                return false;
-            else if (b.y == 0)
-                return a.x >= b.x;
-            else
-                return a.x >= 0;
-        } else {
-            if (b.y < 0)
-                return false;
-            else if (b.y == 0)
-                return b.x < 0;
-            else
-                return (a ^ b) >= 0;
-        }
-    };
-    std::sort(p.begin(), p.end(), cmp);
+    std::sort(p.begin(), p.end(), arg_cmp<T>);
 }
 
 template <class T>
