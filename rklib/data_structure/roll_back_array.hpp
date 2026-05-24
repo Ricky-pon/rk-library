@@ -2,6 +2,7 @@
 #define RK_ROLL_BACK_ARRAY_HPP
 
 #include <cassert>
+#include <concepts>
 #include <vector>
 
 namespace rklib {
@@ -23,17 +24,26 @@ struct RollbackArray
 
     // === 配列操作 ===
 
+    int size() const { return n_; }
+
     T get(int i)
     {
         assert(0 <= i && i < n_);
         return data_[i];
     }
 
-    void set(int i, T val)
+    template<class F>
+        requires std::invocable<F, T&>
+    void modify(int i, F f)
     {
         assert(0 <= i && i < n_);
         history_.emplace_back(i, data_[i]);
-        data_[i] = val;
+        f(data_[i]);
+    }
+
+    void set(int i, T val)
+    {
+        modify(i, [&](T& v) { v = std::move(val); });
     }
 
     // === 履歴操作 ===
